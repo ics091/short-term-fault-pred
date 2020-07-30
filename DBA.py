@@ -1,5 +1,6 @@
 import numpy as np
 from dtw import dtw
+import math
 
 l2_norm = lambda x, y: (x - y)**2
 
@@ -69,7 +70,6 @@ def DTW_multiple_alignment_p(Sref, S):
     return alignment
 
 
-
 def DBA_update(Tinit, D):
     T = []
     alignment = []
@@ -131,6 +131,33 @@ def Wtd_DBA(D, W, I):
     return (T)
 
 
+# Weight assign
+def NearestNeighbor(T, D):
+    minDist = float("inf")
+    NN = []
+    for S in D:
+        if S.tolist() == T.tolist():
+            pass
+        else:
+            dist = dtw(S, T, dist=l2_norm)[0]
+            if dist < minDist:
+                NN = S
+                minDist = dist
+    return NN
+
+
+# insure 0 < r < 1
+def Weight_Assign(T, D, r):
+    NN = NearestNeighbor(T, D)
+    dNN = dtw(T, NN, dist=l2_norm)[0]
+    Weights = []
+    for S in D:
+        dS = dtw(S, T, dist=l2_norm)[0]
+        w = math.exp(math.log(r) * (dS / dNN))
+        Weights.append(w)
+    return Weights
+
+
 if __name__ == '__main__':
     D = [
         np.array([1, 3, 6, 6, 5, 3, 2]),
@@ -144,7 +171,7 @@ if __name__ == '__main__':
     # print(W)
     # print(sum(W))
     W = [1, 0.3, 0.4, 0.766, 0.2]
-    # medoid_ = Medoid(D)
+    medoid_ = Medoid(D)
     # print(medoid_)
     # print(DTW_multiple_alignment(medoid_, D[0]))
     # T = DBA(D, 5)
@@ -155,4 +182,7 @@ if __name__ == '__main__':
     # Wtd_DBA(D, W, 5)
     # print(DTW_multiple_alignment(D[0], D[1]))
     # print(DTW_multiple_alignment_p(D[0], D[1]))
-    Wtd_DBA(D, W, 5)
+    # Wtd_DBA(D, W, 5)
+    print(medoid_)
+    print(NearestNeighbor(medoid_, D))
+    print(Weight_Assign(medoid_, D, 0.1))
