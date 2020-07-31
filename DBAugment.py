@@ -1,5 +1,6 @@
 import numpy as np
-from DBA import Medoid, Wtd_medoid, Weight_Assign, Wtd_DBA
+from DBA import Weight_Assign, Wtd_DBA
+import pandas as pd
 
 Data = [[[100, 50, 1, 0.1], 
          [98, 45, 0.9, 0.2], 
@@ -50,5 +51,56 @@ def DBAugment(Data, r, cycle):
     return Generate
 
 
+def path(time):
+    h_data_path = './' + time + '/h/h'
+    nh_data_path = './' + time + '/nh/nh'
+    return h_data_path, nh_data_path
+
+
+def loadOriginHNH(l1, l2, time):
+    p1, p2 = path(time)
+    x = 1
+    y = 1
+    cb_data1 = []
+    cb_data2 = []
+    while x <= l1:
+        try:
+            p = p1 + str(x) + '.csv'
+            data = pd.read_csv(p, header=None)
+            if len(data) >= 30:
+                cb_data1.append(data.values.tolist)
+            else:
+                pass
+        except:
+            pass
+        x += 1
+    while y <= l2:
+        try:
+            p = p2 + str(y) + '.csv'
+            data = pd.read_csv(p, header=None)
+            if len(data) >= 30:
+                cb_data2.append(data.values.tolist)
+            else:
+                pass
+        except:
+            pass
+        y += 1
+    
+    return cb_data1, cb_data2
+
+# 
+def AugmentHNH(Data, r, cycle, N, path, type):
+    for n in range(N):
+        GenTS = DBAugment(Data, r, cycle)
+        GenTS = pd.DataFrame(data=np.array(GenTS))
+        if type == 0:
+            csv_path = path + '/nh/nh' + str(n + 1) + '.csv'
+        elif type == 1:
+            csv_path = path + '/h/h' + str(n + 1) + '.csv'
+        else:
+            pass
+        GenTS.to_csv(csv_path, index=False, header=False)
+
+
 if __name__ == '__main__':
-    DBAugment(Data, 0.5, 5)
+    
