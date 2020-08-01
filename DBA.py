@@ -11,6 +11,7 @@ def mean(arr):
 
 def Medoid(D):
     minSS = float("inf")
+    medoid = None
     for S1 in D:
         tmpSS = 0
         for S2 in D:
@@ -23,6 +24,7 @@ def Medoid(D):
 
 def Wtd_medoid(D, W):
     minSS = float("inf")
+    medoid = None
     for S1 in D:
         tmpSS = 0
         for S2, w in zip(D, W):
@@ -118,7 +120,7 @@ def DBA(D, I):
     T = Medoid(D)
     for i in range(I):
         T = DBA_update(T, D)
-        print(T)
+        # print(T)
     return T
 
 
@@ -127,7 +129,7 @@ def Wtd_DBA(D, W, I):
     T = Wtd_medoid(D, W)
     for i in range(I):
         T = Wtd_DBA_update(T, D, W)
-        print(T)
+        # print(T)
     return (T)
 
 
@@ -135,13 +137,14 @@ def Wtd_DBA(D, W, I):
 def NearestNeighbor(T, D):
     minDist = float("inf")
     NN = []
-    for S in D:
-        if S.tolist() == T.tolist():
+    Len = len(D)
+    for i in range(Len):
+        dist = dtw(D[i], T, dist=l2_norm)[0]
+        if dist == 0:
             pass
         else:
-            dist = dtw(S, T, dist=l2_norm)[0]
             if dist < minDist:
-                NN = S
+                NN = D[i]
                 minDist = dist
     return NN
 
@@ -149,17 +152,22 @@ def NearestNeighbor(T, D):
 # insure 0 < r < 1
 def Weight_Assign(T, D, r):
     NN = NearestNeighbor(T, D)
-    dNN = dtw(T, NN, dist=l2_norm)[0]
     Weights = []
-    for S in D:
-        dS = dtw(S, T, dist=l2_norm)[0]
-        w = math.exp(math.log(r) * (dS / dNN))
-        Weights.append(w)
+    if NN == []:
+        for S in D:
+            Weights.append(1)
+    else:
+        dNN = dtw(T, NN, dist=l2_norm)[0]
+        for S in D:
+            dS = dtw(S, T, dist=l2_norm)[0]
+            w = math.exp(math.log(r) * (dS / dNN))
+            Weights.append(w)
     return Weights
 
 
 if __name__ == '__main__':
     D = [
+        np.array([1, 3, 6, 6, 5, 3, 1]),
         np.array([1, 3, 6, 6, 5, 3, 2]),
         np.array([0, 2, 5, 4, 2, 1, 1, 0]),
         np.array([0, 0, 1, 3, 0, 1, 1]),
@@ -167,22 +175,10 @@ if __name__ == '__main__':
         np.array([0, 0, 1, 3, 2, 1, 0])
     ]
 
-    # W = np.random.rand(5)
+    # random get Tinit
+    # Tinit = D[0]
+    # W = Weight_Assign(Tinit, D, 0.5)
     # print(W)
-    # print(sum(W))
-    W = [1, 0.3, 0.4, 0.766, 0.2]
-    medoid_ = Medoid(D)
-    # print(medoid_)
-    # print(DTW_multiple_alignment(medoid_, D[0]))
-    # T = DBA(D, 5)
-    # m = Medoid(D)
-    # w_m = Wtd_medoid(D, W)
-    # print(m)
-    # print(w_m)
-    # Wtd_DBA(D, W, 5)
-    # print(DTW_multiple_alignment(D[0], D[1]))
-    # print(DTW_multiple_alignment_p(D[0], D[1]))
-    # Wtd_DBA(D, W, 5)
-    print(medoid_)
-    print(NearestNeighbor(medoid_, D))
-    print(Weight_Assign(medoid_, D, 0.1))
+    # print(Wtd_medoid(D, W))
+    # print(Wtd_DBA(D, W, 5))
+    # print(D)
