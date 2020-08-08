@@ -103,13 +103,13 @@ class LSTM(nn.Module):
     def __init__(self):
         super(LSTM, self).__init__()
         self.cnn = nn.Sequential(
-            nn.Dropout(0.5),
+            # nn.Dropout(0.5),
             nn.Conv1d(INTPUT_SIZE, 8, 2),
             nn.ReLU(),
         )
         self.rnn = nn.LSTM(
             input_size=8,
-            dropout=0.2,
+            # dropout=0.2,
             hidden_size=16,
             num_layers=2,
             batch_first=True,
@@ -128,7 +128,7 @@ class LSTM(nn.Module):
         return out
 
 
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 TIME_STEP = 30
 INTPUT_SIZE = 9
 LR = 0.001
@@ -145,6 +145,9 @@ if __name__ == '__main__':
     print(len(X_train))
     print(len(X_vail))
     print(len(X_test))
+    print(y_train, '\n')
+    print(y_vail, '\n')
+    print(y_test, '\n')
 
     dataset = Data.TensorDataset(X_train, y_train)
     loader = Data.DataLoader(
@@ -167,10 +170,11 @@ if __name__ == '__main__':
     test_loss_rec = []
     AUC_rec = []
     accu_rec = []
-    sum_loss = 0.0
-    sum_step = 1
 
     for epoch in range(200):
+        sum_loss = 0.0
+        sum_step = 0
+        epoch_rec.append(epoch)
         for step, (b_x, b_y) in enumerate(loader):
 
             b_x = b_x.view(-1, 30, 9)
@@ -178,16 +182,14 @@ if __name__ == '__main__':
             b_y = b_y.numpy().reshape(-1, 1)
             b_y = torch.from_numpy(b_y)
             loss = loss_func(output, b_y)
-            sum_loss = sum_loss + loss
-            sum_step = sum_step + 1
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            if step % 50 == 0:
-                train_loss_rec.append(sum_loss / sum_step)
-                sum_loss = 0.0
-                sum_step = 0
+            sum_loss += loss
+            sum_step += 1
+
+            if step / 5 == 1:
                 lstm = lstm.eval()
                 with torch.no_grad():
                     v_output = lstm(X_vail.view(-1, 30, 9))
@@ -204,11 +206,13 @@ if __name__ == '__main__':
                     # print('pred_y:',pred_y)
                     # print('true_y:',true_y)
 
-                    epoch_rec.append(epoch)
                     AUC_rec.append(
                         roc_auc_score(y_vail, torch.sigmoid(v_output)))
                     accu_rec.append(accuracy_score(pred_vy, true_vy))
                 lstm.train()
+        
+        # 一个epoch结束后，计算train loss
+        train_loss_rec.append(sum_loss / sum_step)
 
         lstm.eval()
         with torch.no_grad():
