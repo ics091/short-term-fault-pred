@@ -3,55 +3,78 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
+cdtype = {
+    'yr_modahrmn': str,
+    'message_type': str,
+    # 'speed': float,
+    # 'vehicle_state': int,
+    # 'charging_status': int,
+    # 'mode': int,
+    # 'total_volt': float,
+    # 'total_current': float,
+    # 'mileage': float,
+    # 'standard_soc': int,
+    # 'cell_volt_list': str,
+    # 'max_cell_volt': float,
+    # 'max_volt_cell_id': int,
+    # 'min_cell_volt': float,
+    # 'min_cell_volt_id': int,
+    # 'max_temp': int,
+    # 'max_temp_probe_id': int,
+    # 'min_temp': int,
+    # 'min_temp_probe_id': int,
+    # 'max_alarm_lvl': int,
+    'bat_fault_list': object,
+    # 'isulate_r': int,
+    # 'dcdc_stat': int,
+    # 'sing_temp_num': int,
+    # 'sing_volt_num': int,
+    # 'cell_temp_list': str,
+    # 'gear': int,
+    # 'max_volt_num': int,
+    # 'min_volt_num': int,
+    # 'max_temp_num': int,
+    # 'min_temp_num': int,
+    'alarm_info': str
+}
+
+
+def check_nan(path):
+    try:
+        data = pd.read_csv(
+            path,
+            header=0,
+            dtype=cdtype)
+    except Exception as e:
+        print(str(e))
+    else:
+        for c in data.columns:
+            column_data = data[c]
+            if column_data.isna().any():
+                if column_data.dropna().empty:
+                    print(c + ' ->IS EMPTY')
+                else:
+                    print(c + ' ->GET NaN VALUE')
+            else:
+                print(c + ' ->FILL')
+
+
 def analysis(path):
     try:
         data = pd.read_csv(
             path,
             header=0,
-            dtype={
-                # 'yr_modahrmn': str,
-                # 'message_type': str,
-                # 'speed': float,
-                # 'vehicle_state': int,
-                # 'charging_status': int,
-                # 'mode': int,
-                # 'total_volt': float,
-                # 'total_current': float,
-                # 'mileage': float,
-                # 'standard_soc': int,
-                # 'cell_volt_list': str,
-                # 'max_cell_volt': float,
-                # 'max_volt_cell_id': int,
-                # 'min_cell_volt': float,
-                # 'min_cell_volt_id': int,
-                # 'max_temp': int,
-                # 'max_temp_probe_id': int,
-                # 'min_temp': int,
-                # 'min_temp_probe_id': int,
-                # 'max_alarm_lvl': int,
-                # 'bat_fault_list': object,
-                # 'isulate_r': int,
-                # 'dcdc_stat': int,
-                # 'sing_temp_num': int,
-                # 'sing_volt_num': int,
-                # 'cell_temp_list': str,
-                # 'gear': int,
-                # 'max_volt_num': int,
-                # 'min_volt_num': int,
-                # 'max_temp_num': int,
-                # 'min_temp_num': int,
-                # 'alarm_info': str
-            })
+            dtype=cdtype)
     except Exception as e:
         print(str(e))
-    # _speed = np.array(data['speed'].values.tolist())
-    # _speed = -_speed / 10
+    _speed = np.array(data['speed'].values.tolist())[100:5000]
+    _speed = _speed / 100
     # _Vstatus = np.array(data['vehicle_state'].values.tolist())
     _Cstatus = np.array(data['charging_status'].values.tolist())
-    _Tcurrent = np.array(data['total_current'].values.tolist())
+    _Tcurrent = np.array(data['total_current'].values.tolist())[100:5000]
     _Tcurrent = _Tcurrent / 100
-    # _Tvolt = np.array(data['total_volt'].values.tolist())
-    # _Tvolt = _Tvolt / 100
+    _Tvolt = np.array(data['total_volt'].values.tolist())
+    _Tvolt = _Tvolt / 100
     # _mile = np.array(data['mileage'].values.tolist())
     # _soc = np.array(data['standard_soc'].values.tolist())
     # _soc = _soc / 100
@@ -60,10 +83,11 @@ def analysis(path):
     # _maxtemp = np.array(data['max_temp'].values.tolist())
     # _mintemp = np.array(data['min_temp'].values.tolist())
     # _gear = np.array(data['gear'].values.tolist())
-    index = np.arange(0, len(data), 1)
-    # plt.plot(index, _speed, label='speed')
+    # index = np.arange(0, len(data), 1)
+    index = np.arange(100, 5000, 1)
+    plt.plot(index, _speed, label='speed')
     # plt.plot(index, _Vstatus, label='vehicle stt')
-    plt.plot(index, _Cstatus, label='charge stt')
+    # plt.plot(index, _Cstatus, label='charge stt')
     # plt.plot(index, _soc, label='soc')
     # plt.plot(index, _Tvolt, label='volt')
     plt.plot(index, _Tcurrent, label='current')
@@ -84,40 +108,7 @@ def process_sigle(path):
         data = pd.read_csv(
             path,
             header=0,
-            dtype={
-                # 'yr_modahrmn': str,
-                # 'message_type': str,
-                # 'speed': float,
-                # 'vehicle_state': int,
-                # 'charging_status': int,
-                # 'mode': int,
-                # 'total_volt': float,
-                # 'total_current': float,
-                # 'mileage': float,
-                # 'standard_soc': int,
-                # 'cell_volt_list': str,
-                # 'max_cell_volt': float,
-                # 'max_volt_cell_id': int,
-                # 'min_cell_volt': float,
-                # 'min_cell_volt_id': int,
-                # 'max_temp': int,
-                # 'max_temp_probe_id': int,
-                # 'min_temp': int,
-                # 'min_temp_probe_id': int,
-                # 'max_alarm_lvl': int,
-                # 'bat_fault_list': object,
-                # 'isulate_r': int,
-                # 'dcdc_stat': int,
-                # 'sing_temp_num': int,
-                # 'sing_volt_num': int,
-                # 'cell_temp_list': str,
-                # 'gear': int,
-                # 'max_volt_num': int,
-                # 'min_volt_num': int,
-                # 'max_temp_num': int,
-                # 'min_temp_num': int,
-                # 'alarm_info': str
-            })
+            dtype=cdtype)
     except Exception as e:
         print(str(e))
     for c in data.columns:
@@ -606,19 +597,10 @@ def process_sigle(path):
 
 if __name__ == '__main__':
     path = '/Users/xiejian/ncbdc/vb_data/0dd8d9a9c15a45beb6db8f7fe8f5ba62/part-00000-66a9d65e-cad2-4f62-af22-e9acbec50dbc.c000.csv'
-    fill_data = process_sigle(path)
-    # analysis(path)
-    # df = pd.DataFrame([[np.nan, 2, np.nan, 0], [3, 4, np.nan, 1],
-    #                    [np.nan, np.nan, np.nan, 5], [np.nan, 3, np.nan, 4]],
-    #                   columns=list('ABCD'))
-    # print(df)
-    # df = df.fillna(method='pad')
-    # df = df.fillna(method='bfill')
-    # print(df)
-    # df = pd.DataFrame([np.nan, 1, 2, np.nan, np.nan, 3, np.nan, np.nan, np.nan, 4])
-    # nan_list = df.index[np.where(np.isnan(df))[0]].values.tolist()
-    # print(nan_list)
-    # new_df = pd.DataFrame([2, 3, 4, 5])
-    # df['D'] = new_df
-    # print(df)
-    fill_data.to_csv('/Users/xiejian/ncbdc/test_fill.csv')
+    # fill_data = process_sigle(path)
+    # # analysis(path)
+    # fill_data.to_csv('/Users/xiejian/ncbdc/test_fill.csv')
+    # check_nan(path)
+    # print('\naftet fill\n')
+    # check_nan('/Users/xiejian/ncbdc/test_fill.csv')
+    analysis(path)
